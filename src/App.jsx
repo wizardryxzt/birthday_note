@@ -1,5 +1,5 @@
 // Li Junheng完成了大部分的代码工作，包括css中字体、按键的设计，计算生日、剩余天数和计划日期的算法等
-// Xiao Zhaotong完成了欢迎界面和结束界面“按任意键继续/返回”这一操作的设计并完成了注释和README的说明
+// Xiao Zhaotong完成了欢迎界面和结束界面“按任意键继续/返回”这一操作的设计并改进了计算计划日期的算法使其适应一些特殊情况
 
 import { useState, useEffect } from "react";
 import "./App.css";
@@ -39,6 +39,7 @@ const calcNextBirthday = (birthStr, todayStr) => {
 const adjustToSaturday = (date) => {
   const d = new Date(date);
   const dow = d.getDay();
+
   if (dow === 0 || dow === 6) return { adjusted: d, wasAdjusted: false, originalDow: dow };
   const offset =
     dow === 1 ? -2 :
@@ -69,13 +70,38 @@ function App() {
   };
 
   // 根据提前天数计算计划日期
+  // 考虑特殊情况：即最近的周六晚于生日或早于当天
   const handleCalcPlan = () => {
     const n = parseInt(advDays, 10);
     if (isNaN(n) || n <= 0) return;
+
     const raw = new Date(nextBday);
     raw.setDate(raw.getDate() - n);
-    const { adjusted, wasAdjusted, originalDow } = adjustToSaturday(raw);
-    setPlan({ n, rawDate: new Date(raw), finalDate: adjusted, wasAdjusted, originalDow });
+
+    // 获取今天日期
+  const today = new Date(todayDate);
+
+  // 先按原规则调整到最近的周六
+  const { adjusted, wasAdjusted, originalDow } = adjustToSaturday(raw);
+
+  let finalDate = new Date(adjusted);
+
+  // 如果最近的周六在生日当天或生日之后，改为前一个周六
+  if (finalDate >= nextBday) {
+    finalDate.setDate(finalDate.getDate() - 7);
+  }
+
+  // 如果调整后的周六在今天之前，改为后一个周六
+  if (finalDate < today) {
+    finalDate.setDate(finalDate.getDate() + 7);
+  }
+
+  // 如果仍然不合法，则直接使用今天
+  if (finalDate < today || finalDate >= nextBday) {
+    finalDate = new Date(today.getTime());
+  }
+
+    setPlan({ n, rawDate: new Date(raw), finalDate, wasAdjusted, originalDow });
     setStep(3);
   };
 
@@ -196,7 +222,9 @@ function App() {
 
             {plan.wasAdjusted && (
               <div className="adjust-tip">
-                {formatDate(plan.rawDate)} 为{DAY_NAMES[plan.originalDow]}（工作日），已自动调整为最近的周六。
+                {plan.finalDate.toDateString() === new Date(todayDate).toDateString()
+                  ? "时间紧迫，建议从今天开始准备"
+                  : `${formatDate(plan.rawDate)} 为${DAY_NAMES[plan.originalDow]}（工作日），已自动调整为最近的周六。`}
               </div>
             )}
 
