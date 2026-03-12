@@ -1,16 +1,38 @@
-# React + Vite
+# 生日聚会计划便签
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+这是一个基于 React 和 Vite 开发的小型网页应用，用于帮助用户计算下次生日，并提前安排生日聚会计划日期。
 
-Currently, two official plugins are available:
+## 项目功能
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 输入出生日期和今天的日期
+- 自动计算下次生日日期
+- 显示距离下次生日还有多少天
+- 支持输入“提前多少天开始准备”
+- 如果计划日期落在工作日，自动调整到最近的周六
+- 使用多步骤页面展示结果，界面更清晰
+- 支持少量按键交互
 
-## React Compiler
+## 项目结构
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```text
+birthday-notes
+├─ public
+├─ src
+│  ├─ App.jsx
+│  ├─ App.css
+│  └─ main.jsx
+├─ index.html
+├─ package.json
+└─ vite.config.js
+```
 
-## Expanding the ESLint configuration
+## 技术栈
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- React
+- Vite
+- JavaScript
+- CSS
+
+## 说明
+
+这个项目适合作为软件工程课程的前期开发项目，代码结构清晰，页面简单。

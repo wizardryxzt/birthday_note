@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 
 const DAY_NAMES = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
@@ -47,6 +47,7 @@ const adjustToSaturday = (date) => {
 };
 
 function App() {
+  // step 用来控制当前显示哪一个页面
   const [step, setStep] = useState(0);
   const [birthDate, setBirthDate] = useState("");
   const [todayDate, setTodayDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -55,6 +56,7 @@ function App() {
   const [advDays, setAdvDays] = useState("");
   const [plan, setPlan] = useState(null);
 
+  // 计算下次生日并进入下一步
   const handleCalcBirthday = () => {
     if (!birthDate || !todayDate) return;
     const { next, days } = calcNextBirthday(birthDate, todayDate);
@@ -63,6 +65,7 @@ function App() {
     setStep(2);
   };
 
+  // 根据提前天数计算计划日期
   const handleCalcPlan = () => {
     const n = parseInt(advDays, 10);
     if (isNaN(n) || n <= 0) return;
@@ -73,6 +76,7 @@ function App() {
     setStep(3);
   };
 
+  // 回到初始状态，重新开始
   const reset = () => {
     setStep(0);
     setBirthDate("");
@@ -81,15 +85,30 @@ function App() {
     setNextBday(null);
   };
 
+ /* 键盘监听：第一页按任意键开始，最后一页按任意键重新开始 */
+  useEffect(() => {
+    const handleKey = () => {
+      if (step === 0) {
+        setStep(1);
+      } else if (step === 4) {
+        reset();
+      }
+    };
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [step]);
+
+
   /* ── 所有步骤统一渲染，用 key={step} 触发缓动 ── */
   const content = (() => {
-    /* Step 0: 欢迎界面 */
+    /* Step 0: 欢迎界面，按任意键继续 */
     if (step === 0) {
       return (
         <div className="card center">
           <h1>生日聚会计划便签</h1>
           <p className="sub">欢迎使用生日聚会计划工具！<br/>帮你计算下次生日并制定聚会准备计划。</p>
-          <button className="btn btn-primary" onClick={() => setStep(1)}>开始使用</button>
+          <p className="welcome-hint">按任意键继续</p>
         </div>
       );
     }
@@ -204,7 +223,7 @@ function App() {
             请记住在 <strong>{formatDate(plan.finalDate)}</strong>（{dayName(plan.finalDate)}）<br/>制定你的生日聚会计划。
           </p>
           <p className="hint">祝你有一个完美的生日聚会！</p>
-          <button className="btn btn-primary" onClick={reset}>重新开始</button>
+          <p className="welcome-hint">按任意键返回</p>
         </div>
       );
     }
