@@ -1,231 +1,226 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import "./App.css";
 
+const DAY_NAMES = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+
+const formatDate = (date) =>
+  `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+
+const dayName = (date) => DAY_NAMES[date.getDay()];
+
+/** 在指定年份创建生日日期，处理 2/29 等溢出情况 */
+const birthdayInYear = (year, month, day) => {
+  const d = new Date(year, month, day);
+  // 如果月份溢出（例如非闰年 2/29 → 3/1），回退到当月最后一天（2/28）
+  if (d.getMonth() !== month) return new Date(year, month + 1, 0);
+  return d;
+};
+
+/** 计算下次生日及天数差 */
+const calcNextBirthday = (birthStr, todayStr) => {
+  const birth = new Date(birthStr);
+  const today = new Date(todayStr);
+  let next = birthdayInYear(today.getFullYear(), birth.getMonth(), birth.getDate());
+  if (next <= today) {
+    next = birthdayInYear(today.getFullYear() + 1, birth.getMonth(), birth.getDate());
+  }
+  const days = Math.ceil((next - today) / (1000 * 60 * 60 * 24));
+  return { next, days };
+};
+
+/**
+ * 若计划日期为工作日，调整到最近的周六：
+ *   周一、周二 → 前一个周六
+ *   周三、周四、周五 → 后一个周六
+ */
+const adjustToSaturday = (date) => {
+  const d = new Date(date);
+  const dow = d.getDay();
+  if (dow === 0 || dow === 6) return { adjusted: d, wasAdjusted: false, originalDow: dow };
+  const offset =
+    dow === 1 ? -2 :
+    dow === 2 ? -3 :
+    dow === 3 ?  3 :
+    dow === 4 ?  2 : 1; // fri
+  d.setDate(d.getDate() + offset);
+  return { adjusted: d, wasAdjusted: true, originalDow: dow };
+};
+
 function App() {
+  const [step, setStep] = useState(0);
+  const [birthDate, setBirthDate] = useState("");
+  const [todayDate, setTodayDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [nextBday, setNextBday] = useState(null);
+  const [daysToBday, setDaysToBday] = useState(0);
+  const [advDays, setAdvDays] = useState("");
+  const [plan, setPlan] = useState(null);
 
-  // Task list — initialised from localStorage
-  const [tasks, setTasks] = useState(() => {
-    const saved = localStorage.getItem("birthdayTasks");
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  // Input field value
-  const [text, setText] = useState("");
-
-  // Feedback toast message
-  const [feedback, setFeedback] = useState("");
-
-  // Persist tasks whenever they change
-  useEffect(() => {
-    localStorage.setItem("birthdayTasks", JSON.stringify(tasks));
-  }, [tasks]);
-
-  const showFeedback = (msg) => {
-    setFeedback(msg);
-    setTimeout(() => setFeedback(""), 2200);
+  const handleCalcBirthday = () => {
+    if (!birthDate || !todayDate) return;
+    const { next, days } = calcNextBirthday(birthDate, todayDate);
+    setNextBday(next);
+    setDaysToBday(days);
+    setStep(2);
   };
 
-  // Add a task
-  const addTask = () => {
-    if (text.trim() === "") {
-      showFeedback("⚠️ Please type a task before adding!");
-      return;
+  const handleCalcPlan = () => {
+    const n = parseInt(advDays, 10);
+    if (isNaN(n) || n <= 0) return;
+    const raw = new Date(nextBday);
+    raw.setDate(raw.getDate() - n);
+    const { adjusted, wasAdjusted, originalDow } = adjustToSaturday(raw);
+    setPlan({ n, rawDate: new Date(raw), finalDate: adjusted, wasAdjusted, originalDow });
+    setStep(3);
+  };
+
+  const reset = () => {
+    setStep(0);
+    setBirthDate("");
+    setAdvDays("");
+    setPlan(null);
+    setNextBday(null);
+  };
+
+  /* ── 所有步骤统一渲染，用 key={step} 触发缓动 ── */
+  const content = (() => {
+    /* Step 0: 欢迎界面 */
+    if (step === 0) {
+      return (
+        <div className="card center">
+          <h1>生日聚会计划便签</h1>
+          <p className="sub">欢迎使用生日聚会计划工具！<br/>帮你计算下次生日并制定聚会准备计划。</p>
+          <button className="btn btn-primary" onClick={() => setStep(1)}>开始使用</button>
+        </div>
+      );
     }
-    const newTask = { id: crypto.randomUUID(), name: text.trim(), done: false };
-    setTasks([...tasks, newTask]);
-    setText("");
-    showFeedback("🎉 Task added successfully!");
-  };
+    /* Step 1: 输入日期 */
+    if (step === 1) {
+      return (
+        <div className="card">
+          <h2 className="title">输入日期信息</h2>
+          <p className="hint">请输入你的出生日期和今天的日期，程序将计算下次生日。</p>
 
-  // Delete a task
-  const deleteTask = (id) => {
-    setTasks(tasks.filter(task => task.id !== id));
-    showFeedback("🗑️ Task removed.");
-  };
+          <label className="field-label">出生日期</label>
+          <input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
 
-  // Toggle done/undone
-  const toggleTask = (id) => {
-    setTasks(
-      tasks.map(task =>
-        task.id === id ? { ...task, done: !task.done } : task
-      )
-    );
-  };
+          <label className="field-label">今天的日期</label>
+          <input type="date" value={todayDate} onChange={(e) => setTodayDate(e.target.value)} />
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") addTask();
-  };
-
-  const pending = tasks.filter(t => !t.done);
-  const completed = tasks.filter(t => t.done);
-  const progress = tasks.length > 0
-    ? Math.round((completed.length / tasks.length) * 100)
-    : 0;
-
-  return (
-    <div className="page">
-
-      {/* ── Header Section ── */}
-      <header className="header-section">
-        <div className="header-icon">🎂</div>
-        <h1>Birthday Party Planner</h1>
-        <p className="subtitle">
-          Organise every detail of your perfect celebration — one task at a time.
-        </p>
-      </header>
-
-      {/* ── Input Section ── */}
-      <section className="input-section">
-        <h2 className="section-title">✏️ Add a New Task</h2>
-        <p className="section-hint">
-          Type a task below and press <kbd>Enter</kbd> or click{" "}
-          <strong>Add Task</strong> to begin planning.
-        </p>
-        <div className="input-area">
-          <input
-            type="text"
-            placeholder="e.g. Order the birthday cake, send invitations…"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={handleKeyDown}
-            aria-label="New task"
-          />
           <button
             className="btn btn-primary"
-            onClick={addTask}
-            title="Add this task to your list"
+            onClick={handleCalcBirthday}
+            disabled={!birthDate || !todayDate}
           >
-            + Add Task
+            计算下次生日 &rarr;
           </button>
         </div>
-        {feedback && (
-          <div className="feedback-toast" role="status">
-            {feedback}
+      );
+    }
+    /* Step 2: 制定计划日期 */
+    if (step === 2) {
+      return (
+        <div className="card">
+          <h2 className="title">生日聚会计划制定日期</h2>
+
+          <div className="info-box">
+            <div className="info-row">
+              <span className="info-label">下次生日日期</span>
+              <span className="info-value">{formatDate(nextBday)}（{dayName(nextBday)}）</span>
+            </div>
+            <div className="info-row">
+              <span className="info-label">距离今天还有</span>
+              <span className="info-value">{daysToBday} 天</span>
+            </div>
           </div>
-        )}
-      </section>
 
-      {/* ── Tasks Section — two columns ── */}
-      <section className="tasks-section">
+          <label className="field-label">希望提前多少天做聚会计划？</label>
+          <input
+            type="number"
+            min="1"
+            value={advDays}
+            onChange={(e) => setAdvDays(e.target.value)}
+            placeholder="例如：7"
+          />
 
-        {/* Pending column */}
-        <div className="column column-pending">
-          <h2 className="column-title">
-            📋 To Do{" "}
-            <span className="badge badge-pending">{pending.length}</span>
-          </h2>
-
-          {pending.length === 0 ? (
-            <div className="empty-state">
-              <p className="empty-icon">🌟</p>
-              <p>No pending tasks!</p>
-              <p>Add your first task above to start planning.</p>
-            </div>
-          ) : (
-            <ul className="task-list">
-              {pending.map(task => (
-                <li key={task.id} className="task-item">
-                  <span
-                    className="task-name"
-                    onClick={() => toggleTask(task.id)}
-                    title="Click to mark as done"
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => e.key === "Enter" && toggleTask(task.id)}
-                  >
-                    {task.name}
-                  </span>
-                  <div className="task-actions">
-                    <button
-                      className="btn btn-done"
-                      onClick={() => toggleTask(task.id)}
-                      title="Mark as completed"
-                    >
-                      ✓ Done
-                    </button>
-                    <button
-                      className="btn btn-delete"
-                      onClick={() => deleteTask(task.id)}
-                      title="Remove this task"
-                      aria-label="Delete task"
-                    >
-                      🗑
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+          <button
+            className="btn btn-primary"
+            onClick={handleCalcPlan}
+            disabled={!advDays || parseInt(advDays, 10) <= 0}
+          >
+            确定计划日期 &rarr;
+          </button>
         </div>
+      );
+    }
+    /* Step 3: 结果显示 */
+    if (step === 3) {
+      return (
+        <div className="card">
+          <h2 className="title">生日聚会计划结果</h2>
 
-        {/* Completed column */}
-        <div className="column column-completed">
-          <h2 className="column-title">
-            ✅ Completed{" "}
-            <span className="badge badge-done">{completed.length}</span>
-          </h2>
-
-          {completed.length === 0 ? (
-            <div className="empty-state">
-              <p className="empty-icon">🎯</p>
-              <p>Nothing completed yet.</p>
-              <p>Mark a task as done to see it here.</p>
+          <div className="result-box">
+            <div className="result-row">
+              <span className="r-label">下次生日日期</span>
+              <span className="r-value">{formatDate(nextBday)}（{dayName(nextBday)}）</span>
             </div>
-          ) : (
-            <ul className="task-list">
-              {completed.map(task => (
-                <li key={task.id} className="task-item task-done">
-                  <span
-                    className="task-name"
-                    onClick={() => toggleTask(task.id)}
-                    title="Click to move back to To Do"
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => e.key === "Enter" && toggleTask(task.id)}
-                  >
-                    {task.name}
-                  </span>
-                  <div className="task-actions">
-                    <button
-                      className="btn btn-undo"
-                      onClick={() => toggleTask(task.id)}
-                      title="Move back to To Do"
-                    >
-                      ↩ Undo
-                    </button>
-                    <button
-                      className="btn btn-delete"
-                      onClick={() => deleteTask(task.id)}
-                      title="Remove this task"
-                      aria-label="Delete task"
-                    >
-                      🗑
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+            <div className="result-row">
+              <span className="r-label">距离今天的天数</span>
+              <span className="r-value">{daysToBday} 天</span>
+            </div>
+            <div className="result-row">
+              <span className="r-label">距离下次生日前 {plan.n} 天的日期</span>
+              <span className="r-value">{formatDate(plan.rawDate)}（{dayName(plan.rawDate)}）</span>
+            </div>
+
+            {plan.wasAdjusted && (
+              <div className="adjust-tip">
+                {formatDate(plan.rawDate)} 为{DAY_NAMES[plan.originalDow]}（工作日），已自动调整为最近的周六。
+              </div>
+            )}
+
+            <div className="result-row highlight">
+              <span className="r-label">预计准备制定生日计划的日期</span>
+              <span className="r-value">{formatDate(plan.finalDate)}（{dayName(plan.finalDate)}）</span>
+            </div>
+          </div>
+
+          <div className="btn-group">
+            <button className="btn btn-secondary" onClick={() => { setAdvDays(""); setPlan(null); setStep(2); }}>
+              重新确定计划日期
+            </button>
+            <button className="btn btn-primary" onClick={() => setStep(4)}>
+              确认并完成
+            </button>
+          </div>
         </div>
-
-      </section>
-
-      {/* ── Progress Footer ── */}
-      {tasks.length > 0 && (
-        <footer className="footer-section">
-          <p>
-            {completed.length} of {tasks.length} task
-            {tasks.length !== 1 ? "s" : ""} completed — {progress}%
+      );
+    }
+    /* Step 4: 结束界面 */
+    if (step === 4) {
+      return (
+        <div className="card center">
+          <h1>计划制定完成！</h1>
+          <p className="sub">
+            请记住在 <strong>{formatDate(plan.finalDate)}</strong>（{dayName(plan.finalDate)}）<br/>制定你的生日聚会计划。
           </p>
-          <div className="progress-bar" role="progressbar" aria-label="Task completion progress" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
-            <div
-              className="progress-fill"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </footer>
-      )}
+          <p className="hint">祝你有一个完美的生日聚会！</p>
+          <button className="btn btn-primary" onClick={reset}>重新开始</button>
+        </div>
+      );
+    }
+    return null;
+  })();
 
+  return (
+    <div className="page" key={step}>
+      {content}
+      {step >= 1 && (
+        <div className="step-dots">
+          {[1, 2, 3, 4].map((s) => (
+            <span key={s} className={`dot${step === s ? " active" : ""}`} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
