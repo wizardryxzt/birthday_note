@@ -1,5 +1,5 @@
 // Li Junheng完成了大部分的代码工作，包括css中字体、按键的设计，计算生日、剩余天数和计划日期的算法等
-// Xiao Zhaotong完成了欢迎界面和结束界面“按任意键继续/返回”这一操作的设计并完成了注释和README的说明
+// Xiao Zhaotong完成了欢迎界面和结束界面“按任意键继续/返回”这一操作的设计并补充了计划日期的一些特殊情况
 
 import { useState, useEffect } from "react";
 import "./App.css";
@@ -70,17 +70,7 @@ function App() {
   };
 
   // 根据提前天数计算计划日期
-  const handleCalcPlan = () => {
-    const n = parseInt(advDays, 10);
-    if (isNaN(n) || n <= 0) return;
-    const raw = new Date(nextBday);
-    raw.setDate(raw.getDate() - n);
-    const { adjusted, wasAdjusted, originalDow } = adjustToSaturday(raw);
-    setPlan({ n, rawDate: new Date(raw), finalDate: adjusted, wasAdjusted, originalDow });
-    setStep(3);
-  };
-
-  /* （考虑特殊情况：即最近的周六晚于生日或早于当天？）
+  // 考虑特殊情况：即最近的周六晚于生日或早于当天？
   const handleCalcPlan = () => {
     const n = parseInt(advDays, 10);
     if (isNaN(n) || n <= 0) return;
@@ -114,7 +104,6 @@ function App() {
     setPlan({ n, rawDate: new Date(raw), finalDate, wasAdjusted, originalDow });
     setStep(3);
   };
-  */
 
   // 回到初始状态，重新开始
   const reset = () => {
