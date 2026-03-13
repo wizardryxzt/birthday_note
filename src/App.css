@@ -1,277 +1,326 @@
 /* ─── Reset & Page ─── */
-* { box-sizing: border-box; }
+* {
+    box-sizing: border-box;
+}
 
 body {
-  margin: 0;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #faf7f2 0%, #f5f0eb 55%, #faf7f2 100%);
-  font-family: Georgia, 'Times New Roman', Times, serif;
-  color: #2c3e50;
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #faf7f2 0%, #f5f0eb 55%, #faf7f2 100%);
+    font-family: Georgia, "Times New Roman", Times, serif;
+    color: #2c3e50;
 }
 
 .page {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 48px 20px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 48px 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 /* ─── Card ─── */
 .card {
-  background: #fff;
-  border-radius: 24px;
-  padding: 36px 32px;
-  box-shadow: 0 4px 28px rgba(66, 165, 245, 0.1);
-  width: 100%;
-  animation: fadeUp 0.35s ease;
+    background: #fff;
+    border-radius: 24px;
+    padding: 36px 32px;
+    box-shadow: 0 4px 28px rgba(66, 165, 245, 0.1);
+    width: 100%;
+    animation: fadeUp 0.35s ease;
 }
 
-.card.center { text-align: center; }
+.card.center {
+    text-align: center;
+}
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ─── Typography ─── */
 h1 {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1e88e5;
-  margin: 0 0 12px;
-  letter-spacing: -0.02em;
+    font-family:
+        "Inter",
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e88e5;
+    margin: 0 0 12px;
+    letter-spacing: -0.02em;
 }
 
 h2.title {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #1565c0;
-  margin: 0 0 8px;
+    font-family:
+        "Inter",
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1565c0;
+    margin: 0 0 8px;
 }
 
 .sub {
-  font-size: 1rem;
-  color: #666;
-  line-height: 1.7;
-  margin: 0 0 24px;
+    font-size: 1rem;
+    color: #666;
+    line-height: 1.7;
+    margin: 0 0 24px;
 }
-
 
 /*  字体闪烁效果  */
 @keyframes blink {
-  0% { opacity: 1; }
-  50% { opacity: 0.3; }
-  100% { opacity: 1; }
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.3;
+    }
+    100% {
+        opacity: 1;
+    }
 }
 
 .welcome-hint {
-  font-size: 0.9rem;
-  color: #888; 
-  font-style: italic;
-  margin: 0 0 20px;
-  text-decoration: underline;
-  animation: blink 1.5s infinite;
+    font-size: 0.9rem;
+    color: #888;
+    font-style: italic;
+    margin: 0 0 20px;
+    text-decoration: underline;
+    animation: blink 1.5s infinite;
 }
 
 .hint {
-  font-size: 0.88rem;
-  color: #aaa;
-  font-style: italic;
-  margin: 0 0 20px;
+    font-size: 0.88rem;
+    color: #aaa;
+    font-style: italic;
+    margin: 0 0 20px;
 }
-
 
 /* ─── Form ─── */
 .field-label {
-  display: block;
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: #555;
-  margin: 18px 0 6px;
+    display: block;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #555;
+    margin: 18px 0 6px;
 }
 
 input[type="date"],
 input[type="number"] {
-  width: 100%;
-  padding: 11px 16px;
-  font-size: 0.95rem;
-  font-family: Georgia, 'Times New Roman', Times, serif;
-  border: 2px solid #bbdefb;
-  border-radius: 14px;
-  outline: none;
-  color: #2c3e50;
-  background: #fff;
-  transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+    padding: 11px 16px;
+    font-size: 0.95rem;
+    font-family: Georgia, "Times New Roman", Times, serif;
+    border: 2px solid #bbdefb;
+    border-radius: 14px;
+    outline: none;
+    color: #2c3e50;
+    background: #fff;
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
 }
 
 input[type="date"]:focus,
 input[type="number"]:focus {
-  border-color: #42a5f5;
-  box-shadow: 0 0 0 4px rgba(66, 165, 245, 0.1);
+    border-color: #42a5f5;
+    box-shadow: 0 0 0 4px rgba(66, 165, 245, 0.1);
 }
 
 /* ─── Buttons ─── */
 .btn {
-  border: none;
-  border-radius: 50px;
-  padding: 12px 28px;
-  font-size: 0.92rem;
-  font-family: Georgia, 'Times New Roman', Times, serif;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 24px;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 28px;
+    font-size: 0.92rem;
+    font-family: Georgia, "Times New Roman", Times, serif;
+    font-weight: bold;
+    cursor: pointer;
+    transition:
+        background 0.18s,
+        transform 0.12s,
+        box-shadow 0.18s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 24px;
 }
 
 .btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
+    opacity: 0.45;
+    cursor: not-allowed;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #42a5f5, #90caf9);
-  color: #fff;
-  box-shadow: 0 3px 14px rgba(66, 165, 245, 0.3);
+    background: linear-gradient(135deg, #42a5f5, #90caf9);
+    color: #fff;
+    box-shadow: 0 3px 14px rgba(66, 165, 245, 0.3);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #1e88e5, #42a5f5);
-  box-shadow: 0 5px 20px rgba(66, 165, 245, 0.4);
-  transform: translateY(-2px);
+    background: linear-gradient(135deg, #1e88e5, #42a5f5);
+    box-shadow: 0 5px 20px rgba(66, 165, 245, 0.4);
+    transform: translateY(-2px);
 }
 
 .btn-primary:active:not(:disabled) {
-  transform: translateY(0) scale(0.97);
+    transform: translateY(0) scale(0.97);
 }
 
 .btn-secondary {
-  background: #e3f2fd;
-  color: #1565c0;
-  box-shadow: none;
+    background: #e3f2fd;
+    color: #1565c0;
+    box-shadow: none;
 }
 
 .btn-secondary:hover {
-  background: #bbdefb;
-  transform: translateY(-1px);
+    background: #bbdefb;
+    transform: translateY(-1px);
 }
 
 .btn-group {
-  display: flex;
-  gap: 12px;
-  margin-top: 24px;
-  flex-wrap: wrap;
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    flex-wrap: wrap;
 }
 
 /* ─── Info Box (step 2) ─── */
 .info-box {
-  background: #f5f9ff;
-  border-left: 4px solid #42a5f5;
-  border-radius: 0 14px 14px 0;
-  padding: 16px 20px;
-  margin: 16px 0 8px;
+    background: #f5f9ff;
+    border-left: 4px solid #42a5f5;
+    border-radius: 0 14px 14px 0;
+    padding: 16px 20px;
+    margin: 16px 0 8px;
 }
 
 .info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
 }
 
 .info-label {
-  font-size: 0.88rem;
-  color: #888;
+    font-size: 0.88rem;
+    color: #888;
 }
 
 .info-value {
-  font-size: 0.95rem;
-  font-weight: bold;
-  color: #1565c0;
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: #1565c0;
 }
 
 /* ─── Result Box (step 3) ─── */
 .result-box {
-  margin: 16px 0 0;
+    margin: 16px 0 0;
 }
 
 .result-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid #eef5fd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #eef5fd;
 }
 
-.result-row:last-child { border-bottom: none; }
+.result-row:last-child {
+    border-bottom: none;
+}
 
 .result-row.highlight {
-  background: #e8f5e9;
-  border-radius: 14px;
-  border-bottom: none;
-  margin-top: 8px;
+    background: #e8f5e9;
+    border-radius: 14px;
+    border-bottom: none;
+    margin-top: 8px;
 }
 
 .r-label {
-  font-size: 0.86rem;
-  color: #888;
-  flex-shrink: 0;
-  margin-right: 12px;
+    font-size: 0.86rem;
+    color: #888;
+    flex-shrink: 0;
+    margin-right: 12px;
 }
 
 .r-value {
-  font-size: 0.92rem;
-  font-weight: bold;
-  color: #2c3e50;
-  text-align: right;
+    font-size: 0.92rem;
+    font-weight: bold;
+    color: #2c3e50;
+    text-align: right;
 }
 
-.highlight .r-label { color: #2e7d32; }
-.highlight .r-value { color: #1b5e20; }
+.highlight .r-label {
+    color: #2e7d32;
+}
+.highlight .r-value {
+    color: #1b5e20;
+}
 
 .adjust-tip {
-  background: #fff3e0;
-  border-left: 4px solid #ffb74d;
-  border-radius: 0 12px 12px 0;
-  padding: 10px 16px;
-  font-size: 0.85rem;
-  color: #e65100;
-  margin: 8px 0;
+    background: #fff3e0;
+    border-left: 4px solid #ffb74d;
+    border-radius: 0 12px 12px 0;
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    color: #e65100;
+    margin: 8px 0;
 }
 
 /* ─── Step Dots ─── */
 .step-dots {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #ccc;
-  transition: background 0.3s, transform 0.3s;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ccc;
+    transition:
+        background 0.3s,
+        transform 0.3s;
 }
 
 .dot.active {
-  background: #42a5f5;
-  transform: scale(1.25);
+    background: #42a5f5;
+    transform: scale(1.25);
 }
 
 /* ─── Responsive ─── */
 @media (max-width: 480px) {
-  .card { padding: 28px 18px; }
-  h1 { font-size: 1.6rem; }
-  .result-row { flex-direction: column; align-items: flex-start; gap: 4px; }
-  .r-value { text-align: left; }
-  .btn-group { flex-direction: column; }
+    .card {
+        padding: 28px 18px;
+    }
+    h1 {
+        font-size: 1.6rem;
+    }
+    .result-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    .r-value {
+        text-align: left;
+    }
+    .btn-group {
+        flex-direction: column;
+    }
 }
