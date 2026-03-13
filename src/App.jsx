@@ -223,7 +223,7 @@ function App() {
             {plan.wasAdjusted && (
               <div className="adjust-tip">
                 {plan.finalDate.toDateString() === new Date(todayDate).toDateString()
-                  ? "时间紧迫，建议从今天开始计划,下次记得早点准备哦"
+                  ? "时间紧迫，建议今天开始计划,下次记得早点准备哦"
                   : `${formatDate(plan.rawDate)} 为${DAY_NAMES[plan.originalDow]}（工作日），已自动调整为最近的周六。`}
               </div>
             )}
