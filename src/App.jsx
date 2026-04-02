@@ -1,6 +1,3 @@
-// Li Junheng完成了大部分的代码工作，包括css中字体、按键的设计，计算生日、剩余天数和计划日期的算法等
-// Xiao Zhaotong完成了欢迎界面和结束界面“按任意键继续/返回”这一操作的设计并补充了计划日期的一些特殊情况
-
 import { useState, useEffect } from "react";
 import "./App.css";
 
@@ -34,24 +31,26 @@ const calcNextBirthday = (birthStr, todayStr) => {
 
 /**
  * 若计划日期为工作日，调整到最近的周六：
- *   周一、周二 → 前一个周六
- *   周三、周四、周五 → 后一个周六
+ * 周一、周二 → 前一个周六
+ * 周三、周四、周五 → 后一个周六
  */
 const adjustToSaturday = (date) => {
   const d = new Date(date);
   const dow = d.getDay();
 
   if (dow === 0 || dow === 6) return { adjusted: d, wasAdjusted: false, originalDow: dow };
+
   const offset =
     dow === 1 ? -2 :
     dow === 2 ? -3 :
     dow === 3 ? 3 :
     dow === 4 ? 2 : 1;
+
   d.setDate(d.getDate() + offset);
   return { adjusted: d, wasAdjusted: true, originalDow: dow };
 };
 
-/** 判断某日期是否在五一/十一假期区间 */
+/** 是否在五一/十一特殊区间 */
 const isHolidayRange = (date) => {
   const m = date.getMonth() + 1;
   const d = date.getDate();
@@ -65,33 +64,33 @@ const isWorkday = (date) => {
 };
 
 /**
- * 保证计划日期“符合常识”：
+ * 对候选日期进行“符合常识”的兜底修正：
  * 1. 不能早于今天
- * 2. 不能在生日当天或生日之后
- * 3. 如果按规则调整后仍不合理，则统一建议今天开始准备
+ * 2. 不能在生日当天或之后
+ * 3. 不合理时统一建议今天开始准备
  */
 const normalizePlanDate = (candidateDate, today, nextBirthday) => {
-  const result = {
+  if (candidateDate < today) {
+    return {
+      finalDate: new Date(today),
+      useTodaySuggestion: true,
+      reason: "原计划日期早于今天，说明时间已经比较紧迫，建议今天开始准备。",
+    };
+  }
+
+  if (candidateDate >= nextBirthday) {
+    return {
+      finalDate: new Date(today),
+      useTodaySuggestion: true,
+      reason: "原计划日期落在生日当天或生日之后，不符合常识，建议今天开始准备。",
+    };
+  }
+
+  return {
     finalDate: new Date(candidateDate),
     useTodaySuggestion: false,
     reason: "",
   };
-
-  if (result.finalDate < today) {
-    result.finalDate = new Date(today);
-    result.useTodaySuggestion = true;
-    result.reason = "原计划日期早于今天，说明时间已经比较紧迫，建议今天开始准备。";
-    return result;
-  }
-
-  if (result.finalDate >= nextBirthday) {
-    result.finalDate = new Date(today);
-    result.useTodaySuggestion = true;
-    result.reason = "原计划日期落在生日当天或生日之后，不符合常识，建议今天开始准备。";
-    return result;
-  }
-
-  return result;
 };
 
 /** 生成唯一 id */
@@ -106,26 +105,30 @@ const createRelative = (name, relation, birthDate) => ({
   planInfo: null,
 });
 
-/** 为某位亲友构造计划信息 */
+/** 计算某位亲友的计划 */
 const buildPlanForRelative = (relative, todayStr, advDays) => {
   const n = parseInt(advDays, 10);
 
   if (!relative || !todayStr || isNaN(n) || n <= 0) {
     return {
-      error: "请输入合法的提前天数（必须是大于 0 的整数）。"
+      error: "请输入合法的提前天数（必须是大于 0 的整数）。",
     };
   }
 
   const today = new Date(todayStr);
   const { next, days } = calcNextBirthday(relative.birthDate, todayStr);
 
+  // 若提前天数已经超过“今天到生日”的距离，说明理论计划日早于今天
   if (n > days) {
     return {
       error: `提前 ${n} 天已经早于今天，不符合常识。建议今天开始准备。`,
-      suggestionDate: new Date(today)
+      suggestionDate: new Date(today),
+      nextBirthday: next,
+      daysToBirthday: days,
     };
   }
 
+  // 原始计划日期：生日往前推 n 天
   const raw = new Date(next);
   raw.setDate(raw.getDate() - n);
 
@@ -135,6 +138,7 @@ const buildPlanForRelative = (relative, todayStr, advDays) => {
   let holidayProtected = false;
   let specialMessage = "";
 
+  // 只有“工作日且不在特殊区间”才调整到最近周六
   if (isWorkday(raw)) {
     if (!isHolidayRange(raw)) {
       const result = adjustToSaturday(raw);
@@ -153,6 +157,7 @@ const buildPlanForRelative = (relative, todayStr, advDays) => {
     }
   }
 
+  // 再做“符合常识”的最终修正
   const normalized = normalizePlanDate(candidateDate, today, next);
 
   if (normalized.useTodaySuggestion) {
@@ -190,7 +195,7 @@ function App() {
   // 多位亲友列表
   const [relatives, setRelatives] = useState([]);
 
-  // 亲友录入表单
+  // 录入表单
   const [relativeName, setRelativeName] = useState("");
   const [relativeRelation, setRelativeRelation] = useState("");
   const [relativeBirthDate, setRelativeBirthDate] = useState("");
@@ -198,14 +203,14 @@ function App() {
   // 当前选择的亲友
   const [selectedRelativeId, setSelectedRelativeId] = useState("");
 
-  // 今天日期和提前天数
+  // 输入今天日期和提前天数
   const [todayDate, setTodayDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [advDays, setAdvDays] = useState("");
 
-  // 当前正在查看/计算的计划结果
+  // 当前结果
   const [currentRelativePlan, setCurrentRelativePlan] = useState(null);
 
-  // 输入错误提示
+  // 错误提示
   const [errorMsg, setErrorMsg] = useState("");
 
   const selectedRelative =
@@ -213,7 +218,6 @@ function App() {
 
   const finishedRelatives = relatives.filter((item) => item.planInfo);
 
-  // 添加亲友
   const handleAddRelative = () => {
     if (!relativeName || !relativeRelation || !relativeBirthDate) return;
 
@@ -229,15 +233,11 @@ function App() {
     setRelativeBirthDate("");
   };
 
-  // 删除亲友
   const handleDeleteRelative = (id) => {
     setRelatives((prev) => prev.filter((item) => item.id !== id));
-    if (selectedRelativeId === id) {
-      setSelectedRelativeId("");
-    }
+    if (selectedRelativeId === id) setSelectedRelativeId("");
   };
 
-  // 为当前选中的亲友计算计划
   const handleCalcRelativePlan = () => {
     setErrorMsg("");
 
@@ -263,17 +263,18 @@ function App() {
       return;
     }
 
+    // 不合法输入：给出提醒
     if (result.error) {
       setErrorMsg(result.error);
 
+      // 如果是“建议今天开始准备”这种情况，仍然进入结果页展示
       if (result.suggestionDate) {
-        const preview = calcNextBirthday(selectedRelative.birthDate, todayDate);
         setCurrentRelativePlan({
           error: "",
           n: parseInt(advDays, 10),
           today: new Date(todayDate),
-          nextBirthday: preview.next,
-          daysToBirthday: preview.days,
+          nextBirthday: result.nextBirthday,
+          daysToBirthday: result.daysToBirthday,
           rawDate: result.suggestionDate,
           candidateDate: result.suggestionDate,
           finalDate: result.suggestionDate,
@@ -293,7 +294,6 @@ function App() {
     setStep(3);
   };
 
-  // 保存当前亲友计划
   const handleSaveRelativePlan = () => {
     if (!selectedRelative || !currentRelativePlan) return;
 
@@ -306,7 +306,6 @@ function App() {
     );
   };
 
-  // 继续为其他亲友制定
   const handleContinueForOthers = () => {
     handleSaveRelativePlan();
     setSelectedRelativeId("");
@@ -316,13 +315,11 @@ function App() {
     setStep(2);
   };
 
-  // 保存并结束
   const handleFinishAll = () => {
     handleSaveRelativePlan();
     setStep(4);
   };
 
-  // 回到初始状态，重新开始
   const reset = () => {
     setStep(0);
     setRelatives([]);
@@ -336,7 +333,6 @@ function App() {
     setErrorMsg("");
   };
 
-  /* 键盘监听：第一页按任意键开始，最后一页按任意键重新开始 */
   useEffect(() => {
     const handleKey = () => {
       if (step === 0) {
@@ -407,7 +403,7 @@ function App() {
               onClick={() => setStep(2)}
               disabled={relatives.length === 0}
             >
-              下一步：选择亲友 &rarr;
+              下一步：选择亲友 →
             </button>
           </div>
 
@@ -515,7 +511,7 @@ function App() {
 
           <div className="btn-group">
             <button className="btn btn-secondary" onClick={() => setStep(1)}>
-              &larr; 返回录入
+              ← 返回录入
             </button>
 
             <button
@@ -523,7 +519,7 @@ function App() {
               onClick={handleCalcRelativePlan}
               disabled={!selectedRelativeId || !todayDate || !advDays || parseInt(advDays, 10) <= 0}
             >
-              确定计划日期 &rarr;
+              确定计划日期 →
             </button>
           </div>
         </div>
